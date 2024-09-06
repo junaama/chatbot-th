@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
+  const [currentMessage, setCurrentMessage] = useState('');
   const [inputMessage, setInputMessage] = useState('');
   const websocketRef = useRef<WebSocket | null>(null);
 
-  useEffect(() => {
+  const connectWebSocket = () => {
     websocketRef.current = new WebSocket("ws://localhost:8000/ws");
 
     websocketRef.current.onopen = () => {
@@ -15,7 +16,11 @@ export default function Home() {
 
     websocketRef.current.onmessage = (event) => {
       const message = event.data;
-      setMessages(prevMessages => [...prevMessages, message]);
+      if (message === "[DONE]") {
+        setMessages(prevMessages => [...prevMessages, `AI: ${currentMessage}`]);
+        setCurrentMessage('');
+      }
+      setCurrentMessage(prev => prev + message);
     };
 
     websocketRef.current.onerror = (error) => {
@@ -24,7 +29,14 @@ export default function Home() {
 
     websocketRef.current.onclose = () => {
       console.log('WebSocket connection closed');
+      setTimeout(() => {
+        connectWebSocket(); // Reconnect after a delay
+      }, 5000);
     };
+  }
+
+  useEffect(() => {
+    connectWebSocket()
 
     return () => {
       if (websocketRef.current) {
@@ -37,7 +49,9 @@ export default function Home() {
     e.preventDefault();
     if (inputMessage.trim() && websocketRef.current) {
       websocketRef.current.send(inputMessage);
+      setMessages(prevMessages => [...prevMessages, `You: ${inputMessage}`]);
       setInputMessage('');
+      setCurrentMessage('')
     }
   };
 
@@ -82,10 +96,13 @@ export default function Home() {
           {messages.map((message, index) => (
             <p key={index} className="text-gray-600 dark:text-gray-400">{message}</p>
           ))}
+          {currentMessage && (
+            <p className="text-gray-600 dark:text-gray-400">AI: {currentMessage}</p>
+          )}
         </div>
       </div>
 
-      
+
     </main>
   );
 }
