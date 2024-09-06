@@ -1,5 +1,5 @@
 import json
-import requests
+import httpx
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from typing import List
 
@@ -10,31 +10,31 @@ app = FastAPI()
 clients: List[WebSocket] = []
 
 
-def process_message(message: str):
+async def process_message_stream(message: str, websocket: WebSocket):
     ollama_url = "http://localhost:11434/api/chat" 
     payload = {
         "model": "llama3.1", 
         "messages": [{"role": "user", "content": message}],
         "stream": True
     }
-    response = requests.post(ollama_url, json=payload, stream=True)
-    response.raise_for_status()
-    output = ""
 
-    for line in response.iter_lines():
-        body = json.loads(line)
-        if "error" in body:
-            raise Exception(body["error"])
-        if body.get("done") is False:
-            message = body.get("message", "")
-            content = message.get("content", "")
-            output += content
-            # the response streams one token at a time, print that as we receive it
-            print(content, end="", flush=True)
-
-        if body.get("done", False):
-            message["content"] = output
-            return message
+    async with httpx.AsyncClient() as client:
+        async with client.stream("POST", ollama_url, json=payload) as response:
+            async for line in response.aiter_lines():
+                if line:
+                    try:
+                        data = json.loads(line)
+                        if "error" in data:
+                            await websocket.send_text(f"Error: {data['error']}")
+                            return
+                        if not data.get("done", False):
+                            content = data.get("message", {}).get("content", "")
+                            await websocket.send_text(content)
+                        else:
+                            await websocket.send_text("[DONE]")
+                            return
+                    except json.JSONDecodeError:
+                        continue
 
 # routes
 
@@ -45,8 +45,6 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            processed_message = process_message(data)
-            for client in clients:
-                await client.send_text(processed_message)
+            await process_message_stream(data, websocket)
     except WebSocketDisconnect:
         clients.remove(websocket)
