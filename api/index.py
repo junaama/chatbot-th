@@ -9,9 +9,11 @@ app = FastAPI()
 
 clients: List[WebSocket] = []
 
+ollama_url = "http://localhost:11434/api/chat" 
+
+# helper methods
 
 async def process_message_stream(message: str, websocket: WebSocket):
-    ollama_url = "http://localhost:11434/api/chat" 
     payload = {
         "model": "llama3.1", 
         "messages": [{"role": "user", "content": message}],
@@ -25,13 +27,14 @@ async def process_message_stream(message: str, websocket: WebSocket):
                     try:
                         data = json.loads(line)
                         if "error" in data:
-                            await websocket.send_text(f"Error: {data['error']}")
+                            await websocket.send_text(json.dumps({"type": "error", "message": data['error']}))
                             return
                         if not data.get("done", False):
                             content = data.get("message", {}).get("content", "")
-                            await websocket.send_text(content)
+                            await websocket.send_text(json.dumps({"type": "message", "content": content}))
                         else:
-                            await websocket.send_text("[DONE]")
+                            # Send a special signal to indicate the message stream is done
+                            await websocket.send_text(json.dumps({"type": "done"}))
                             return
                     except json.JSONDecodeError:
                         continue
