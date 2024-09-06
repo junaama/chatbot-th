@@ -66,7 +66,11 @@ export default function Home() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputMessage.trim() && websocketRef.current) {
-      websocketRef.current.send(inputMessage);
+      const messageData = {
+        context: messages,
+        current: inputMessage
+      }
+      websocketRef.current.send(JSON.stringify(messageData))
       setMessages(prevMessages => [...prevMessages, `You: ${inputMessage}`]);
       setMessages(prevMessages => [...prevMessages, `AI: Thinking...`]);
       setInputMessage('');

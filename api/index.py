@@ -9,15 +9,16 @@ app = FastAPI()
 
 clients: List[WebSocket] = []
 
-ollama_url = "http://localhost:11434/api/chat" 
+ollama_url = "http://localhost:11434/api/generate" 
 
 # helper methods
 
-async def process_message_stream(message: str, websocket: WebSocket):
+async def process_message_stream(context: List[str], current_message: str, websocket: WebSocket):
     payload = {
         "model": "llama3.1", 
-        "messages": [{"role": "user", "content": message}],
-        "stream": True
+        "prompt": current_message,
+        "stream": True,
+        "context": context 
     }
 
     async with httpx.AsyncClient() as client:
@@ -30,7 +31,7 @@ async def process_message_stream(message: str, websocket: WebSocket):
                             await websocket.send_text(json.dumps({"type": "error", "message": data['error']}))
                             return
                         if not data.get("done", False):
-                            content = data.get("message", {}).get("content", "")
+                            content = data.get("response", "")
                             await websocket.send_text(json.dumps({"type": "message", "content": content}))
                         else:
                             # Send a special signal to indicate the message stream is done
@@ -48,6 +49,9 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            await process_message_stream(data, websocket)
+            message_data = json.loads(data)
+            context = message_data.get("context", [])
+            current_message = message_data.get("current", "")
+            await process_message_stream(context, current_message, websocket)
     except WebSocketDisconnect:
         clients.remove(websocket)
