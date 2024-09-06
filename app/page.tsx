@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
 
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
@@ -117,7 +118,8 @@ export default function Home() {
         </div>
         <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg min-h-[200px]">
           {messages.map((message, index) => (
-            <p key={index} className="text-gray-600 dark:text-gray-400">{message}</p>
+            <Markdown className="prose" key={index}>{message}</Markdown>
+
           ))}
         </div>
       </div>
