@@ -6,6 +6,7 @@ export default function Home() {
   const [inputMessage, setInputMessage] = useState('');
   const websocketRef = useRef<WebSocket | null>(null);
   const currentMessageRef = useRef('');
+  const [context, setContext] = useState<number[]>([]);
 
   const connectWebSocket = () => {
     websocketRef.current = new WebSocket("ws://localhost:8000/ws");
@@ -22,7 +23,6 @@ export default function Home() {
 
           setMessages(prevMessages => {
             const updatedMessages = [...prevMessages];
-            console.log("down", updatedMessages[updatedMessages.length - 1])
 
             updatedMessages[updatedMessages.length - 1] = `AI: ${currentMessageRef.current}`;
             return updatedMessages;
@@ -30,12 +30,12 @@ export default function Home() {
 
           break;
         case "done":
-          console.log("message complete", messages);
+          setContext(message.context)
           currentMessageRef.current = '';
 
           break;
         case "error":
-          console.error("Server Error: ", message.content);
+          console.error("Server Error: ", message.message);
           break;
         default:
           console.log('Unhandled message type');
@@ -67,7 +67,7 @@ export default function Home() {
     e.preventDefault();
     if (inputMessage.trim() && websocketRef.current) {
       const messageData = {
-        context: messages,
+        context: context,
         current: inputMessage
       }
       websocketRef.current.send(JSON.stringify(messageData))
