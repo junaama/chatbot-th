@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
-  const [currentMessage, setCurrentMessage] = useState('');
   const [inputMessage, setInputMessage] = useState('');
   const websocketRef = useRef<WebSocket | null>(null);
+  const currentMessageRef = useRef('');
 
   const connectWebSocket = () => {
     websocketRef.current = new WebSocket("ws://localhost:8000/ws");
@@ -13,14 +13,33 @@ export default function Home() {
     websocketRef.current.onopen = () => {
       console.log('WebSocket connection established');
     };
-
     websocketRef.current.onmessage = (event) => {
-      const message = event.data;
-      if (message === "[DONE]") {
-        setMessages(prevMessages => [...prevMessages, `AI: ${currentMessage}`]);
-        setCurrentMessage('');
+      const message = JSON.parse(event.data);
+
+      switch (message.type) {
+        case "message":
+          currentMessageRef.current += message.content;
+
+          setMessages(prevMessages => {
+            const updatedMessages = [...prevMessages];
+            console.log("down", updatedMessages[updatedMessages.length - 1])
+
+            updatedMessages[updatedMessages.length - 1] = `AI: ${currentMessageRef.current}`;
+            return updatedMessages;
+          });
+
+          break;
+        case "done":
+          console.log("message complete", messages);
+          currentMessageRef.current = '';
+
+          break;
+        case "error":
+          console.error("Server Error: ", message.content);
+          break;
+        default:
+          console.log('Unhandled message type');
       }
-      setCurrentMessage(prev => prev + message);
     };
 
     websocketRef.current.onerror = (error) => {
@@ -37,7 +56,6 @@ export default function Home() {
 
   useEffect(() => {
     connectWebSocket()
-
     return () => {
       if (websocketRef.current) {
         websocketRef.current.close();
@@ -50,8 +68,9 @@ export default function Home() {
     if (inputMessage.trim() && websocketRef.current) {
       websocketRef.current.send(inputMessage);
       setMessages(prevMessages => [...prevMessages, `You: ${inputMessage}`]);
+      setMessages(prevMessages => [...prevMessages, `AI: Thinking...`]);
       setInputMessage('');
-      setCurrentMessage('')
+      currentMessageRef.current = '';
     }
   };
 
@@ -96,13 +115,8 @@ export default function Home() {
           {messages.map((message, index) => (
             <p key={index} className="text-gray-600 dark:text-gray-400">{message}</p>
           ))}
-          {currentMessage && (
-            <p className="text-gray-600 dark:text-gray-400">AI: {currentMessage}</p>
-          )}
         </div>
       </div>
-
-
     </main>
   );
 }
