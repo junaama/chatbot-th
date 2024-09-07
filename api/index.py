@@ -11,12 +11,22 @@ clients: List[WebSocket] = []
 
 ollama_url = "http://localhost:11434/api/generate" 
 
+# different bot modes
+vacation_mode = "You are a laid-back chatbot with an island accent. Your responses should be relaxed, use island slang, and convey a 'go with the flow' attitude. Respond as if you're always on a tropical beach vacation."
+
+work_mode = "You are a very serious and pushy chatbot focused on work efficiency. Your responses should be formal, direct, and emphasize urgency and productivity. Use phrases that convey a no-nonsense attitude.",
+
+
 # helper methods
 
-async def process_message_stream(context: List[str], current_message: str, websocket: WebSocket):
+async def process_message_stream(context: List[str], current_message: str, websocket: WebSocket, mode: str):
+    if mode == "vacation":
+        selected_mode = vacation_mode
+    elif mode == "work":
+        selected_mode = work_mode
     payload = {
         "model": "llama3.1", 
-        "prompt": current_message,
+        "prompt": f"{selected_mode}\nHuman: {current_message}",
         "stream": True,
         "context": context,
         "options": {
@@ -65,6 +75,7 @@ async def websocket_endpoint(websocket: WebSocket):
             message_data = json.loads(data)
             context = message_data.get("context", [])
             current_message = message_data.get("current", "")
-            await process_message_stream(context, current_message, websocket)
+            mode = message_data.get("mode", "")
+            await process_message_stream(context, current_message, websocket, mode)
     except WebSocketDisconnect:
         clients.remove(websocket)

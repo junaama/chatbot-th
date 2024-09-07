@@ -6,6 +6,7 @@ export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [context, setContext] = useState<number[]>([]);
+  const [mode, setMode] = useState<string>("vacation")
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [user, setUser] = useState<{ username: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -94,7 +95,8 @@ export default function Home() {
       const messageData = {
         context: context,
         current: inputMessage,
-        images: [imageBase64] // allow single image upload
+        images: [imageBase64],
+        mode: mode // allow single image upload
       }
       websocketRef.current.send(JSON.stringify(messageData))
       setMessages(prevMessages => [...prevMessages, `You: ${inputMessage}`]);
@@ -140,6 +142,10 @@ export default function Home() {
     setDropdownOpen(false);
   };
 
+  const handleModeChange = () => {
+    setMode(mode === "vacation" ? "work" : "vacation");
+  }
+
   return (
     <main className="flex custom-stars-bg min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl flex items-center justify-between font-mono text-sm">
@@ -167,7 +173,7 @@ export default function Home() {
               </button>
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Hide Chat History</a>
+                  <button onClick={handleModeChange} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ">Switch to {mode === "vacation" ? `Work` : `Vacation`} Mode</button>
                   <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Use Dark Mode</a>
                   <button
                     onClick={handleLogout}
