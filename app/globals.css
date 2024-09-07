@@ -4,8 +4,8 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background-start-rgb: 136, 204, 241;
+  --background-end-rgb: 59, 40, 204;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,4 +24,11 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+
+.custom-stars-bg {
+  background-image: url('/star.svg'), url('/star2.svg');
+  background-position: top left, bottom right;
+  background-repeat: no-repeat, no-repeat;
+  background-size: 300px 300px, 500px 500px; 
 }

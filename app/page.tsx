@@ -130,9 +130,9 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
+    <main className="flex custom-stars-bg min-h-screen flex-col items-center justify-between p-24">
+      <div className="z-10 w-full max-w-5xl flex items-center justify-between font-mono text-sm">
+        <p className="flex-shrink-0 border-b border-gray-300 bg-gradient-to-b from-zinc-200 px-4 py-2 backdrop-blur-2xl dark:border-neutral-800 dark:from-inherit rounded-xl border bg-gray-200 dark:bg-zinc-800/30">
           Chatbot
         </p>
         <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
@@ -147,7 +147,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-full max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <div className="w-full max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mt-6">
         <div className="mb-4">
           <textarea
             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
@@ -218,8 +218,9 @@ export default function Home() {
 
         <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg min-h-[200px]">
           {messages.map((message, index) => (
-            <Markdown className="prose" key={index}>{message}</Markdown>
-
+            <div key={index} className={`mb-4 p-4 rounded-lg ${index % 2 === 0 ? 'bg-red-200 dark:bg-red-800' : 'bg-blue-200 dark:bg-blue-800 bg-gradient-to-b from-zinc-200'}`}>
+              <Markdown className="prose">{message}</Markdown>
+            </div>
           ))}
         </div>
       </div>
