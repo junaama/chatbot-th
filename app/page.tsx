@@ -1,13 +1,14 @@
 'use client'
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
 
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
   const [inputMessage, setInputMessage] = useState('');
+  const [context, setContext] = useState<number[]>([]);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
   const websocketRef = useRef<WebSocket | null>(null);
   const currentMessageRef = useRef('');
-  const [context, setContext] = useState<number[]>([]);
 
   const connectWebSocket = () => {
     websocketRef.current = new WebSocket("ws://localhost:8000/ws");
@@ -66,15 +67,17 @@ export default function Home() {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputMessage.trim() && websocketRef.current) {
+    if ((inputMessage.trim() || imageBase64) && websocketRef.current) {
       const messageData = {
         context: context,
-        current: inputMessage
+        current: inputMessage,
+        images: [imageBase64] // allow single image upload
       }
       websocketRef.current.send(JSON.stringify(messageData))
       setMessages(prevMessages => [...prevMessages, `You: ${inputMessage}`]);
       setMessages(prevMessages => [...prevMessages, `AI: Thinking...`]);
       setInputMessage('');
+      setImageBase64(null)
       currentMessageRef.current = '';
     }
   };
@@ -82,6 +85,25 @@ export default function Home() {
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputMessage(e.target.value);
   };
+
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setImageBase64(base64String.split(',')[1]);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageBase64(null);
+    if (document.getElementById('imageInput')) {
+      (document.getElementById('imageInput') as HTMLInputElement).value = '';
+    }
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
@@ -111,28 +133,57 @@ export default function Home() {
             value={inputMessage}
           ></textarea>
         </div>
-        <div className="flex justify-end">
-          <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" onClick={handleSendMessage}>
+        <div className="flex flex-wrap justify-end items-center gap-4">
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            id="imageInput"
+            onChange={handleImageUpload}
+          />
+          <label
+            htmlFor="imageInput"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 cursor-pointer "
+          >
+            Upload Image
+          </label>
+          {imageBase64 && (
+            <>
+              <span className="text-sm text-gray-600 ">
+                1 file uploaded
+              </span>
+              <button
+                onClick={handleRemoveImage}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 "
+              >
+                Remove Image
+              </button>
+            </>
+          )}
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            onClick={handleSendMessage}
+          >
             Send
           </button>
         </div>
-        
+
         <div className="mt-4 mb-4">
           <h3 className="text-lg font-semibold mb-2">Choose from an example below:</h3>
           <div className="grid grid-cols-3 gap-2">
-            <button 
+            <button
               className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               onClick={() => setInputMessage("What is the capital of France?")}
             >
               What is the color of the sky?
             </button>
-            <button 
+            <button
               className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               onClick={() => setInputMessage("Explain the concept of machine learning in simple terms.")}
             >
               How many pieces are in a chess board?
             </button>
-            <button 
+            <button
               className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               onClick={() => setInputMessage("What are the benefits of regular exercise?")}
             >
@@ -140,7 +191,7 @@ export default function Home() {
             </button>
           </div>
         </div>
-        
+
         <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg min-h-[200px]">
           {messages.map((message, index) => (
             <Markdown className="prose" key={index}>{message}</Markdown>
