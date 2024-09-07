@@ -7,6 +7,9 @@ export default function Home() {
   const [inputMessage, setInputMessage] = useState('');
   const [context, setContext] = useState<number[]>([]);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [user, setUser]= useState<{ username: string } | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isBotLoading, setIsBotLoading] = useState(false)
   const websocketRef = useRef<WebSocket | null>(null);
   const currentMessageRef = useRef('');
 
@@ -21,6 +24,7 @@ export default function Home() {
 
       switch (message.type) {
         case "message":
+          setIsBotLoading(false)
           currentMessageRef.current += message.content;
 
           setMessages(prevMessages => {
@@ -65,6 +69,25 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    let dots = '';
+    let interval: NodeJS.Timeout;
+
+    if (isBotLoading) {
+      interval = setInterval(() => {
+        dots = dots.length < 3 ? dots + '.' : '';
+        setMessages(prevMessages => {
+          const newMessages = [...prevMessages];
+          newMessages[newMessages.length - 1] = `AI: Thinking${dots}`;
+          return newMessages;
+        });
+      }, 500);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isBotLoading]);
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if ((inputMessage.trim() || imageBase64) && websocketRef.current) {
@@ -79,6 +102,7 @@ export default function Home() {
       setInputMessage('');
       setImageBase64(null)
       currentMessageRef.current = '';
+      setIsBotLoading(true)
     }
   };
 
