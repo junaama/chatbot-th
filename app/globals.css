@@ -18,17 +18,30 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
+  background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+}
+
+@keyframes move-stars {
+  0% {
+    background-position: top left, bottom right;
+  }
+
+  50% {
+    background-position: top center, bottom center;
+  }
+
+  100% {
+    background-position: top left, bottom right;
+  }
 }
 
 .custom-stars-bg {
   background-image: url('/star.svg'), url('/star2.svg');
   background-position: top left, bottom right;
   background-repeat: no-repeat, no-repeat;
-  background-size: 300px 300px, 500px 500px; 
+  background-size: 300px 300px, 500px 500px;
+  animation: move-stars 30s infinite ease-in-out;
+
 }
