@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from httpx import TimeoutException
 from passlib.context import CryptContext
@@ -16,6 +17,18 @@ model = "llama3.1"
 
 app = FastAPI()
 
+# middleware
+origins = [
+    "http://localhost:3000",
+    "https://localhost:3000",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 clients: List[WebSocket] = []
 
 ollama_url = "http://localhost:11434/api/generate" 
