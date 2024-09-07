@@ -173,19 +173,19 @@ export default function Home() {
           <div className="grid grid-cols-3 gap-2">
             <button
               className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              onClick={() => setInputMessage("What is the capital of France?")}
+              onClick={() => setInputMessage("What is the color of the sky?")}
             >
               What is the color of the sky?
             </button>
             <button
               className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              onClick={() => setInputMessage("Explain the concept of machine learning in simple terms.")}
+              onClick={() => setInputMessage("How many pieces are in a chess board?")}
             >
               How many pieces are in a chess board?
             </button>
             <button
               className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              onClick={() => setInputMessage("What are the benefits of regular exercise?")}
+              onClick={() => setInputMessage("What are the benefits of taking iron supplements?")}
             >
               What are the benefits of taking iron supplements?
             </button>
