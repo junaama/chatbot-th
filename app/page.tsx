@@ -182,7 +182,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-full max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mt-6">
+      <div className="w-full max-w-2xl mx-auto p-6 bg-[#DDD8B8] dark:bg-gray-800 rounded-lg shadow-md mt-6">
         <div className="mb-4">
           <textarea
             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
@@ -220,7 +220,7 @@ export default function Home() {
             </>
           )}
           <button
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            className="px-4 py-2 bg-[#4C2E05] text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             onClick={handleSendMessage}
           >
             Send
@@ -231,19 +231,19 @@ export default function Home() {
           <h3 className="text-lg font-semibold mb-2">Choose from an example below:</h3>
           <div className="grid grid-cols-3 gap-2">
             <button
-              className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="p-2 text-left border border-[#CEC288] shadow-md dark:bg-gray-700 rounded-lg hover:bg-[#CEC288] dark:hover:bg-gray-600 transition-colors"
               onClick={() => setInputMessage("What is the color of the sky?")}
             >
               What is the color of the sky?
             </button>
             <button
-              className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="p-2 text-left border border-[#CEC288] shadow-md dark:bg-gray-700 rounded-lg hover:bg-[#CEC288] dark:hover:bg-gray-600 transition-colors"
               onClick={() => setInputMessage("How many pieces are in a chess board?")}
             >
               How many pieces are in a chess board?
             </button>
             <button
-              className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="p-2 text-left border border-[#CEC288] shadow-md dark:bg-gray-700 rounded-lg hover:bg-[#CEC288] dark:hover:bg-gray-600 transition-colors"
               onClick={() => setInputMessage("What are the benefits of taking iron supplements?")}
             >
               What are the benefits of taking iron supplements?
@@ -251,9 +251,9 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg min-h-[200px]">
+        <div className="mt-6 p-4 bg-[#DDD8B8]  dark:bg-gray-900 rounded-lg min-h-[200px]">
           {messages.map((message, index) => (
-            <div key={index} className={`mb-4 p-4 rounded-lg ${index % 2 === 0 ? 'bg-red-200 dark:bg-red-800' : 'bg-blue-200 dark:bg-blue-800 bg-gradient-to-b from-zinc-200'}`}>
+            <div key={index} className={`mb-4 p-4 rounded-lg ${index % 2 === 0 ? 'bg-[#CEC288] dark:bg-red-800 ' : 'bg-[#DDD8B8]   border-[#4C2E05] dark:bg-blue-800 shadow-md'}`}>
               <Markdown className="prose">{message}</Markdown>
             </div>
           ))}

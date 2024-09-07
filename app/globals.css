@@ -42,6 +42,7 @@ body {
   background-position: top left, bottom right;
   background-repeat: no-repeat, no-repeat;
   background-size: 300px 300px, 500px 500px;
+  background-attachment: fixed, fixed; 
   animation: move-stars 30s infinite ease-in-out;
 
 }
