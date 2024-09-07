@@ -116,6 +116,31 @@ export default function Home() {
             Send
           </button>
         </div>
+        
+        <div className="mt-4 mb-4">
+          <h3 className="text-lg font-semibold mb-2">Choose from an example below:</h3>
+          <div className="grid grid-cols-3 gap-2">
+            <button 
+              className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              onClick={() => setInputMessage("What is the capital of France?")}
+            >
+              What is the color of the sky?
+            </button>
+            <button 
+              className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              onClick={() => setInputMessage("Explain the concept of machine learning in simple terms.")}
+            >
+              How many pieces are in a chess board?
+            </button>
+            <button 
+              className="p-2 text-left bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              onClick={() => setInputMessage("What are the benefits of regular exercise?")}
+            >
+              What are the benefits of taking iron supplements?
+            </button>
+          </div>
+        </div>
+        
         <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg min-h-[200px]">
           {messages.map((message, index) => (
             <Markdown className="prose" key={index}>{message}</Markdown>
