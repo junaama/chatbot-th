@@ -7,7 +7,7 @@ export default function Home() {
   const [inputMessage, setInputMessage] = useState('');
   const [context, setContext] = useState<number[]>([]);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [user, setUser]= useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<{ username: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isBotLoading, setIsBotLoading] = useState(false)
   const websocketRef = useRef<WebSocket | null>(null);
@@ -129,21 +129,56 @@ export default function Home() {
     }
   }
 
+  const handleSignUp = () => {
+    const username = prompt("Enter your username:");
+    if (username) {
+      setUser({ username });
+    }
+  }
+  const handleLogout = () => {
+    setUser(null);
+    setDropdownOpen(false);
+  };
+
   return (
     <main className="flex custom-stars-bg min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl flex items-center justify-between font-mono text-sm">
         <p className="flex-shrink-0 border-b border-gray-300 bg-gradient-to-b from-zinc-200 px-4 py-2 backdrop-blur-2xl dark:border-neutral-800 dark:from-inherit rounded-xl border bg-gray-200 dark:bg-zinc-800/30">
           Chatbot
         </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By Naama Paulemont
-          </a>
+        <div className="flex items-center">
+          {!user ? (
+            <button
+              className="px-4 py-2 bg-[#4C2E05] text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              onClick={handleSignUp}
+            >
+              Sign Up
+            </button>
+          ) : (
+            <div className="relative">
+              <button
+                className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-200 focus:outline-none"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
+                {user.username}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Hide Chat History</a>
+                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Use Dark Mode</a>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
