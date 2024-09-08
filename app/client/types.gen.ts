@@ -28,3 +28,20 @@ export type LoginLoginPostData = {
 export type LoginLoginPostResponse = (unknown);
 
 export type ReadUsersMeUsersMeGetResponse = (unknown);
+
+export type CreateNewChatChatPostResponse = (unknown);
+
+export type SendMessageMessagePostData = {
+    chatId: number;
+    message: string;
+};
+
+export type SendMessageMessagePostResponse = (unknown);
+
+export type GetChatsChatsGetResponse = (unknown);
+
+export type GetMessagesMessagesChatIdGetData = {
+    chatId: number;
+};
+
+export type GetMessagesMessagesChatIdGetResponse = (unknown);
