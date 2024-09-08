@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios';
-import { UserCreate, registerRegisterPost, OpenAPI, readUsersMeUsersMeGet, LoginLoginPostData, loginLoginPost } from '../client';
+import { UserCreate, registerRegisterPost, OpenAPI, readUsersMeUsersMeGet, LoginLoginPostData, loginLoginPost, validateTokenValidateTokenGet } from '../client';
 
 
 export const signUp = async (data: UserCreate) => {
@@ -59,3 +59,19 @@ export const getMe = async () => {
     }
 };
 
+export const validateToken = async () => {
+    const token = localStorage.getItem("access_token")
+    if(!token) {
+        throw new Error("No token found")
+    }
+    OpenAPI.TOKEN = token
+    try {
+        return await validateTokenValidateTokenGet()
+    } catch (error) {
+        localStorage.removeItem("access_token")
+        if (error instanceof AxiosError) {
+            throw error.message
+        }
+        throw error as string
+    }
+}

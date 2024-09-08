@@ -2,18 +2,19 @@
 import { useState } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { signUp, login } from '../auth/auth';
+import useAuth from '../hooks/useAuth';
 
 type ModalProps = {
     open: boolean;
     setOpen: (open: boolean) => void;
-
 }
 
-export default function Example({ open, setOpen, }: ModalProps) {
+export default function AuthModal({ open, setOpen, }: ModalProps) {
     const [isLoginView, setIsLoginView] = useState(true);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState("")
+    const { fetchUser } = useAuth()
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,6 +39,7 @@ export default function Example({ open, setOpen, }: ModalProps) {
     const handleLogin = async (username: string, password: string) => {
         try {
             await login({ requestBody: { username, password } });
+            await fetchUser()
             setOpen(false);
             setErrorMessage("")
         } catch (error: any) {
@@ -48,7 +50,7 @@ export default function Example({ open, setOpen, }: ModalProps) {
     };
     return (
         <>
-            <button className="px-4 py-2 bg-[#4C2E05] text-white rounded-lg hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-900 focus:ring-opacity-50" onClick={() => setOpen(true)}>Sign Up</button>
+            <button className="px-4 py-2 bg-[#4C2E05] text-white rounded-lg hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-900 focus:ring-opacity-50" onClick={() => setOpen(true)}>Login</button>
             <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">
                 <DialogBackdrop transition
                     className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in" />
