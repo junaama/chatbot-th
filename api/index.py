@@ -11,7 +11,7 @@ from httpx import TimeoutException
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from datetime import datetime, timedelta
-
+from uuid import uuid4
 
 model = "llama3.1"
 
@@ -66,8 +66,9 @@ class Message(Base):
 # chat
 class Chat(Base):
     __tablename__ = "chats"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    id = Column(String, primary_key=True, index=True)
+    title = Column(String, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     messages = relationship("Message", back_populates="chat")
 
 
@@ -146,40 +147,69 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
 
 # helper methods
 
-async def process_message_stream(context: List[str], current_message: str, websocket: WebSocket, mode: str):
+async def process_message_stream(context: List[str], current_message: str, websocket: WebSocket, mode: str, images: List[str]):
     if mode == "vacation":
         selected_mode = vacation_mode
     elif mode == "work":
         selected_mode = work_mode
-    payload = {
-        "model": "llama3.1", 
-        "prompt": f"{selected_mode}\nHuman: {current_message}",
-        "stream": True,
-        "context": context,
-        "options": {
-            "num_ctx": 4096
+    print("IAMGS", len(images))
+    if images and images != [None]:
+        selected_model = "llava"
+    else:
+        selected_model = "llama3.1"
+    print("SELECTEDMODEL", selected_model)
+
+    if selected_model == "llava":
+        payload = {
+            "model": "llava",
+            "prompt": f"{selected_mode}\nHuman: {current_message}",
+            "stream": False,
+            "context": context,
+            "images": images
         }
-    }
+    else:
+        payload = {
+            "model": "llama3.1", 
+            "prompt": f"{selected_mode}\nHuman: {current_message}",
+            "stream": True,
+            "context": context,
+            "options": {
+                "num_ctx": 4096
+            },
+            "images": images
+        }
 
     try:
         async with httpx.AsyncClient(timeout=180) as client:
-            async with client.stream("POST", ollama_url, json=payload) as response:
-                async for line in response.aiter_lines():
-                    if line:
-                        try:
-                            data = json.loads(line)
-                            if "error" in data:
-                                await websocket.send_text(json.dumps({"type": "error", "message": data['error']}))
-                                return
-                            if not data.get("done", False):
-                                content = data.get("response", "")
-                                await websocket.send_text(json.dumps({"type": "message", "content": content}))
-                            else:
-                                # Indicate the message stream is done and collect context
-                                await websocket.send_text(json.dumps({"type": "done", "context": data.get("context", [])}))
-                                return
-                        except json.JSONDecodeError:
-                            continue
+            if payload["stream"]:
+                async with client.stream("POST", ollama_url, json=payload) as response:
+                    async for line in response.aiter_lines():
+                        if line:
+                            try:
+                                data = json.loads(line)
+                                if "error" in data:
+                                    await websocket.send_text(json.dumps({"type": "error", "message": data['error']}))
+                                    return
+                                if not data.get("done", False):
+                                    content = data.get("response", "")
+                                    await websocket.send_text(json.dumps({"type": "message", "content": content}))
+                                else:
+                                    # Indicate the message stream is done and collect context
+                                    await websocket.send_text(json.dumps({"type": "done", "context": data.get("context", [])}))
+                                    return
+                            except json.JSONDecodeError:
+                                continue   
+            else:
+                # Handling response for non streaming payload
+                response = await client.post(ollama_url, json=payload)
+                data = response.json()
+                if "error" in data:
+                    await websocket.send_text(json.dumps({"type": "error", "message": data['error']}))
+                else:
+                    content = data.get("response", "")
+                    await websocket.send_text(json.dumps({"type": "message", "content": content}))
+                    await websocket.send_text(json.dumps({"type": "done", "context": data.get("context", [])}))
+
     except TimeoutException as e:
         error_message = f"Request timed out: {str(e)}"
         await websocket.send_text(json.dumps({"type": "error", "message": error_message}))
@@ -192,10 +222,14 @@ async def process_message_stream(context: List[str], current_message: str, webso
 
 # routes
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+@app.websocket("/ws/{chat_id}")
+async def websocket_endpoint(websocket: WebSocket, chat_id: str, db: Session = Depends(get_db)):
     await websocket.accept()
     clients.append(websocket)
+    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    if not chat:
+        await websocket.close(code=4004)
+        return
     try:
         while True:
             data = await websocket.receive_text()
@@ -203,7 +237,26 @@ async def websocket_endpoint(websocket: WebSocket):
             context = message_data.get("context", [])
             current_message = message_data.get("current", "")
             mode = message_data.get("mode", "")
-            await process_message_stream(context, current_message, websocket, mode)
+            images = message_data.get("images", [])
+            user_id = message_data.get("user_id")
+            current_message_context = message_data.get("current_message_context", "")
+            curr_msg_context = Message(
+                content=current_message_context,
+                user_id=user_id,
+                chat_id=chat_id
+            )
+            db.add(curr_msg_context)
+            db.commit()
+            db.refresh(curr_msg_context)
+            curr_msg = Message(
+                content=current_message,
+                user_id=user_id,
+                chat_id=chat_id)
+            db.add(curr_msg)
+            db.commit()
+            db.refresh(curr_msg)
+
+            await process_message_stream(context, current_message, websocket, mode, images)
     except WebSocketDisconnect:
         clients.remove(websocket)
 
@@ -236,33 +289,53 @@ def login(user: UserCreate, db: Session = Depends(get_db)):
 
 @app.get("/users/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
-    return {"username": current_user.username}
+    return {"username": current_user.username, "user_id": current_user.id}
 
 @app.post("/chat")
 async def create_new_chat(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    chat_instance = Chat(user_id=current_user.id)
+    chat_id = str(uuid4())
+    chat_instance = Chat(id=chat_id, title=f"Chat {chat_id[:8]}", user_id=current_user.id)
     db.add(chat_instance)
     db.commit()
     db.refresh(chat_instance)
-    return {"chat_id": chat_instance.id}
+    return chat_instance
 
-@app.post("/message")
-async def send_message(chat_id: int, message: str, db: Session = Depends(get_db)):
-    chat_instance = db.query(Chat).filter(Chat.id == chat_id).first()
-    if not chat_instance:
-        raise HTTPException(status_code=404, detail="Chat not found")
-    message_instance = Message(chat_id=chat_id, content=message)
-    db.add(message_instance)
-    db.commit()
-    db.refresh(message_instance)
-    return {"message_id": message_instance.id}
-
-@app.get("/chats")
+@app.get("/chats/")
 async def get_chats(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     chats = db.query(Chat).filter(Chat.user_id == current_user.id).all()
-    return {"chats": [{"id": chat.id, "user_id": chat.user_id} for chat in chats]}
+    return chats
 
-@app.get("/messages/{chat_id}")
-async def get_messages(chat_id: int, db: Session = Depends(get_db)):
+@app.get("/chats/user/{user_id}")
+async def get_chats_by_user(user_id: int, db: Session = Depends(get_db)):
+    chats = db.query(Chat).filter(Chat.user_id == user_id).all()
+    return chats
+
+@app.get("/chats/{chat_id}")
+def get_chat(chat_id: str, db: Session = Depends(get_db)):
+    db_chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    if db_chat is None:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    return db_chat
+
+@app.get("/chats/{chat_id}/messages")
+def get_chat_messages(chat_id: str, db: Session = Depends(get_db)):
     messages = db.query(Message).filter(Message.chat_id == chat_id).all()
-    return {"messages": [{"id": message.id, "content": message.content} for message in messages]}
+    return messages
+
+@app.post("/anonymous-chats/")
+def create_anonymous_chat(db: Session = Depends(get_db)):
+    chat_id = str(uuid4())
+    db_chat = Chat(id=chat_id, title=f"Anonymous Chat {chat_id[:8]}", user_id=None)
+    db.add(db_chat)
+    db.commit()
+    db.refresh(db_chat)
+    return db_chat
+
+@app.get("/validate-token")
+def validate_token(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@app.get("/anonymous-chats/")
+def get_anonymous_chats(db: Session = Depends(get_db)):
+    anonymous_chats = db.query(Chat).filter(Chat.user_id == None).all()
+    return anonymous_chats
