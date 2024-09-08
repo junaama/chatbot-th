@@ -42,7 +42,23 @@ body {
   background-position: top left, bottom right;
   background-repeat: no-repeat, no-repeat;
   background-size: 300px 300px, 500px 500px;
-  background-attachment: fixed, fixed; 
+  background-attachment: fixed, fixed;
   animation: move-stars 30s infinite ease-in-out;
 
+}
+
+.reverse-order {
+  flex-direction: column-reverse;
+}
+
+.order-0 {
+  order: 0;
+}
+
+.order-1 {
+  order: 1;
+}
+
+.order-2 {
+  order: 2;
 }
