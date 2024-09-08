@@ -1,8 +1,8 @@
 import json
 import httpx
 import jwt
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import sessionmaker, Session, declarative_base
+from sqlalchemy import ForeignKey, create_engine, Column, Integer, String
+from sqlalchemy.orm import sessionmaker, Session, declarative_base, relationship
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,6 +51,26 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
 
+# message
+class Message(Base):
+    __tablename__ = "messages"
+    id = Column(Integer, primary_key=True, index=True)
+    content = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False)
+    created_at = Column(String, default=datetime.utcnow)
+
+    user = relationship("User")
+    chat = relationship("Chat", back_populates="messages")
+
+# chat
+class Chat(Base):
+    __tablename__ = "chats"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    messages = relationship("Message", back_populates="chat")
+
+
 Base.metadata.create_all(bind=engine)
 
 class UserCreate(BaseModel):
@@ -62,7 +82,7 @@ class Token(BaseModel):
     token_type: str
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 SECRET_KEY = "your-secret-key" 
 ALGORITHM = "HS256"
@@ -217,3 +237,32 @@ def login(user: UserCreate, db: Session = Depends(get_db)):
 @app.get("/users/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return {"username": current_user.username}
+
+@app.post("/chat")
+async def create_new_chat(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    chat_instance = Chat(user_id=current_user.id)
+    db.add(chat_instance)
+    db.commit()
+    db.refresh(chat_instance)
+    return {"chat_id": chat_instance.id}
+
+@app.post("/message")
+async def send_message(chat_id: int, message: str, db: Session = Depends(get_db)):
+    chat_instance = db.query(Chat).filter(Chat.id == chat_id).first()
+    if not chat_instance:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    message_instance = Message(chat_id=chat_id, content=message)
+    db.add(message_instance)
+    db.commit()
+    db.refresh(message_instance)
+    return {"message_id": message_instance.id}
+
+@app.get("/chats")
+async def get_chats(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    chats = db.query(Chat).filter(Chat.user_id == current_user.id).all()
+    return {"chats": [{"id": chat.id, "user_id": chat.user_id} for chat in chats]}
+
+@app.get("/messages/{chat_id}")
+async def get_messages(chat_id: int, db: Session = Depends(get_db)):
+    messages = db.query(Message).filter(Message.chat_id == chat_id).all()
+    return {"messages": [{"id": message.id, "content": message.content} for message in messages]}
