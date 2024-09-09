@@ -19,8 +19,9 @@ export const signUp = async (data: UserCreate) => {
 
 export const login = async (data: LoginLoginPostData) => {
     try {
-        const response = await loginLoginPost(data)
+        const response = await loginLoginPost(data) as any
         localStorage.setItem("access_token", response.access_token)
+        window.location.reload();
     } catch (err: any) {
         let errDetail = err
 
@@ -36,11 +37,6 @@ export const login = async (data: LoginLoginPostData) => {
         
     }
 }
-
-export const logout = () => {
-    localStorage.removeItem("access_token")
-
-};
 
 export const getMe = async () => {
     const token = localStorage.getItem("access_token")
