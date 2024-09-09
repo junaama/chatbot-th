@@ -43,8 +43,8 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, 
     connect_args={"check_same_thread": False}, 
-    pool_size=10,
-    max_overflow=20,
+    pool_size=20,
+    max_overflow=30,
     pool_timeout=30  
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -227,7 +227,7 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: str, db: Session = D
             current_message = message_data.get("current", "")
             mode = message_data.get("mode", "")
             images = message_data.get("images", [])
-            user_id = message_data.get("user_id")
+            user_id = message_data.get("user_id") or 0
             current_message_context = message_data.get("current_message_context", "")
             curr_msg_context = Message(
                 content=current_message_context,

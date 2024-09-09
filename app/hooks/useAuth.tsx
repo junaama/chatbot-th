@@ -4,7 +4,7 @@ import { getMe, validateToken } from "../auth/auth"
 import { ReadUsersMeUsersMeGetResponse } from "../client"
 
 const useAuth = () => {
-    const [user, setUser] = useState<ReadUsersMeUsersMeGetResponse | null>(null)
+    const [user, setUser] = useState<ReadUsersMeUsersMeGetResponse | null | any>(null)
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [token, setToken] = useState<string | null>(typeof window !== undefined ? localStorage.getItem("access_token") : "")
 
