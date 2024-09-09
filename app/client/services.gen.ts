@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { RegisterRegisterPostData, RegisterRegisterPostResponse, LoginLoginPostData, LoginLoginPostResponse, ReadUsersMeUsersMeGetResponse } from './types.gen';
+import type { RegisterRegisterPostData, RegisterRegisterPostResponse, LoginLoginPostData, LoginLoginPostResponse, ReadUsersMeUsersMeGetResponse, CreateNewChatChatPostResponse, GetChatsChatsGetResponse, GetChatChatsChatIdGetData, GetChatChatsChatIdGetResponse, GetChatMessagesChatsChatIdMessagesGetData, GetChatMessagesChatsChatIdMessagesGetResponse, CreateAnonymousChatAnonymousChatsPostResponse, ValidateTokenValidateTokenGetResponse } from './types.gen';
 
 /**
  * Register
@@ -47,4 +47,80 @@ export const loginLoginPost = (data: LoginLoginPostData): CancelablePromise<Logi
 export const readUsersMeUsersMeGet = (): CancelablePromise<ReadUsersMeUsersMeGetResponse> => { return __request(OpenAPI, {
     method: 'GET',
     url: 'http://localhost:8000/users/me'
+}); };
+
+/**
+ * Create New Chat
+ * @returns unknown Successful Response
+ * @throws ApiError
+ */
+export const createNewChatChatPost = (): CancelablePromise<CreateNewChatChatPostResponse> => { return __request(OpenAPI, {
+    method: 'POST',
+    url: 'http://localhost:8000/chat'
+}); };
+
+/**
+ * Get Chats
+ * @returns unknown Successful Response
+ * @throws ApiError
+ */
+export const getChatsChatsGet = (): CancelablePromise<GetChatsChatsGetResponse> => { return __request(OpenAPI, {
+    method: 'GET',
+    url: 'http://localhost:8000/chats/'
+}); };
+
+/**
+ * Get Chat
+ * @param data The data for the request.
+ * @param data.chatId
+ * @returns unknown Successful Response
+ * @throws ApiError
+ */
+export const getChatChatsChatIdGet = (data: GetChatChatsChatIdGetData): CancelablePromise<GetChatChatsChatIdGetResponse> => { return __request(OpenAPI, {
+    method: 'GET',
+    url: 'http://localhost:8000/chats/{chat_id}',
+    path: {
+        chat_id: data.chatId
+    },
+    errors: {
+        422: 'Validation Error'
+    }
+}); };
+
+/**
+ * Get Chat Messages
+ * @param data The data for the request.
+ * @param data.chatId
+ * @returns unknown Successful Response
+ * @throws ApiError
+ */
+export const getChatMessagesChatsChatIdMessagesGet = (data: GetChatMessagesChatsChatIdMessagesGetData): CancelablePromise<GetChatMessagesChatsChatIdMessagesGetResponse> => { return __request(OpenAPI, {
+    method: 'GET',
+    url: 'http://localhost:8000/chats/{chat_id}/messages',
+    path: {
+        chat_id: data.chatId
+    },
+    errors: {
+        422: 'Validation Error'
+    }
+}); };
+
+/**
+ * Create Anonymous Chat
+ * @returns unknown Successful Response
+ * @throws ApiError
+ */
+export const createAnonymousChatAnonymousChatsPost = (): CancelablePromise<CreateAnonymousChatAnonymousChatsPostResponse> => { return __request(OpenAPI, {
+    method: 'POST',
+    url: 'http://localhost:8000/anonymous-chats/'
+}); };
+
+/**
+ * Validate Token
+ * @returns unknown Successful Response
+ * @throws ApiError
+ */
+export const validateTokenValidateTokenGet = (): CancelablePromise<ValidateTokenValidateTokenGetResponse> => { return __request(OpenAPI, {
+    method: 'GET',
+    url: 'http://localhost:8000/validate-token'
 }); };

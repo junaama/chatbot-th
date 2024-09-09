@@ -31,17 +31,22 @@ export type ReadUsersMeUsersMeGetResponse = (unknown);
 
 export type CreateNewChatChatPostResponse = (unknown);
 
-export type SendMessageMessagePostData = {
-    chatId: number;
-    message: string;
-};
-
-export type SendMessageMessagePostResponse = (unknown);
-
 export type GetChatsChatsGetResponse = (unknown);
+export type GetChatsAnonymousChatResponse = (unknown)
+export type GetChatsChatByUserResponse = (unknown)
 
-export type GetMessagesMessagesChatIdGetData = {
-    chatId: number;
+export type GetChatChatsChatIdGetData = {
+    chatId: string;
 };
 
-export type GetMessagesMessagesChatIdGetResponse = (unknown);
+export type GetChatChatsChatIdGetResponse = (unknown);
+
+export type GetChatMessagesChatsChatIdMessagesGetData = {
+    chatId: string;
+};
+
+export type GetChatMessagesChatsChatIdMessagesGetResponse = (unknown);
+
+export type CreateAnonymousChatAnonymousChatsPostResponse = (unknown);
+
+export type ValidateTokenValidateTokenGetResponse = (unknown);
