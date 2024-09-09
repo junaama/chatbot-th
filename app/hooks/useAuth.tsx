@@ -6,7 +6,7 @@ import { ReadUsersMeUsersMeGetResponse } from "../client"
 const useAuth = () => {
     const [user, setUser] = useState<ReadUsersMeUsersMeGetResponse | null | any>(null)
     const [isLoggedIn, setIsLoggedIn] = useState(false)
-    const [token, setToken] = useState<string | null>(typeof window !== undefined ? localStorage.getItem("access_token") : "")
+    const [token, setToken] = useState<string | null>(typeof window !== 'undefined' ? localStorage.getItem("access_token") : "")
 
     const fetchUser = useCallback(async () => {
         const storedToken = localStorage.getItem("access_token");
