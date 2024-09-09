@@ -38,9 +38,9 @@ You can clone & deploy it to Vercel with one click:
 You can clone this repo with the following command
 
 ```bash
-git clone https://github.com/junaama/nextjs-fastapi-starter.git
+git clone https://github.com/junaama/chatbot-th.git
 # or
-git clone git@github.com:junaama/nextjs-fastapi-starter.git
+git clone git@github.com:junaama/chatbot-th.git
 ```
 
 ## Ollama
