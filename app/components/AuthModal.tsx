@@ -14,6 +14,7 @@ export default function AuthModal({ open, setOpen, }: ModalProps) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState("")
+    const [successMessage, setSuccessMessage] = useState("")
     const { fetchUser } = useAuth()
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -30,18 +31,24 @@ export default function AuthModal({ open, setOpen, }: ModalProps) {
             await signUp({ username, password });
             setOpen(false);
             setErrorMessage("")
+            setSuccessMessage("Account created! Now you can login.")
         } catch (error) {
             console.error("handlesignup:", error);
             setErrorMessage(`Sign up failed: ${error}`)
         }
+        // toggle login view and re open
+        setIsLoginView(!isLoginView)
+        setOpen(true)
     };
 
     const handleLogin = async (username: string, password: string) => {
         try {
             await login({ requestBody: { username, password } });
+            setSuccessMessage("Successfully logged in.")
             await fetchUser()
             setOpen(false);
             setErrorMessage("")
+            
         } catch (error: any) {
             console.error("handleLogin:", error);
             setErrorMessage(`Login failed: ${error}`);
@@ -84,7 +91,7 @@ export default function AuthModal({ open, setOpen, }: ModalProps) {
                                     </button>
                                 </form>
                                 {errorMessage && <div className="text-red-500 pt-6">{errorMessage}</div>}
-
+                                {successMessage && <div className="text-green-500 pt-6">{successMessage}</div>}
                                 <div className="py-2 sm:flex  mt-4 justify-between">
                                     <button
                                         onClick={() => setIsLoginView(!isLoginView)}
