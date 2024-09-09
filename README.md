@@ -60,7 +60,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 ### Run Models
 ```bash
 ollama run llama3.1
-# then
+# then (if you want to include images in your requests)
 ollama run llava
 ```
 
@@ -75,6 +75,18 @@ yarn
 # or
 pnpm install
 ```
+### Setup Virtual Environment
+
+```bash
+python -m venv venv
+# then
+source venv/bin/activate
+# or 
+venv\Scripts\activate
+```
+
+
+
 
 Then, run the development server:
 
