@@ -36,6 +36,7 @@ const useWebSocket = (isLoggedIn: boolean) => {
             break;
           case "error":
             console.error("Server Error: ", message.message);
+            setIsBotLoading(false)
             break;
           default:
             console.log('Unhandled message type');
@@ -50,20 +51,37 @@ const useWebSocket = (isLoggedIn: boolean) => {
         console.log('WebSocket connection closed');
         setTimeout(() => {
           connectWebSocket();
-        }, 5000);
+        }, 20000);
       };
     }
   }, [chatId]);
 
   const initializeChat = useCallback(async () => {
     const storedChatId = localStorage.getItem('chatId');
-    if (storedChatId) {
-      setChatId(storedChatId);
-      await getChatById({ chatId: storedChatId });
-    } else {
-      const newChat = isLoggedIn ? await createChat() as any : await createAnonymousChat({ token: localStorage.getItem("access_token") }) as any;
+    const storedChatIdIsAuth = localStorage.getItem('chatIdIsAuth');
+
+    const clearLocalStorage = () => {
+      localStorage.removeItem('chatId');
+      localStorage.removeItem('chatIdIsAuth');
+    };
+
+    const setNewChat = async (newChat: any) => {
       setChatId(newChat.id);
       localStorage.setItem('chatId', newChat.id);
+      localStorage.setItem('chatIdIsAuth', String(isLoggedIn));
+    };
+
+    if (!storedChatId ||
+      (isLoggedIn && storedChatIdIsAuth === 'false') ||
+      (!isLoggedIn && storedChatIdIsAuth === 'true')) {
+      clearLocalStorage();
+      const newChat = isLoggedIn
+        ? await createChat()
+        : await createAnonymousChat();
+      await setNewChat(newChat);
+    } else {
+      setChatId(storedChatId);
+      await getChatById({ chatId: storedChatId });
     }
   }, [isLoggedIn]);
 
@@ -88,8 +106,8 @@ const useWebSocket = (isLoggedIn: boolean) => {
         context: context,
         current: message,
         images: imageBase64 ? [imageBase64] : [],
-        mode, 
-        user_id: userId, 
+        mode,
+        user_id: userId,
         current_message_context: messages[messages.length - 1]
       };
       websocketRef.current.send(JSON.stringify(messageData));
