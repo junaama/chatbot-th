@@ -9,14 +9,12 @@ type ChatInterfaceProps = {
   sendMessage: (message: string, imageBase64: string | null, mode: string, userId: number) => void;
   mode: string;
   isBotLoading: boolean;
-  exampleMessage?: string; 
+  exampleMessage?: string;
   userId: number
 }
 
 const ChatInterface = ({
   messages,
-  setMessages,
-  context,
   sendMessage,
   mode,
   isBotLoading,
@@ -66,49 +64,61 @@ const ChatInterface = ({
 
   return (
     <>
-      <form onSubmit={handleSendMessage} className="mb-4">
-        <textarea
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          rows={4}
-          placeholder="Enter your question here..."
-          onChange={handleInputChange}
-          value={inputMessage}
-        ></textarea>
-        <div className="flex flex-wrap justify-end items-center gap-4 mt-2">
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            id="imageInput"
-            onChange={handleImageUpload}
-          />
-          <label
-            htmlFor="imageInput"
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 cursor-pointer"
-          >
-            Upload Image
-          </label>
-          {imageBase64 && (
-            <>
-              <span className="text-sm text-gray-600">1 file uploaded</span>
-              <button
-                type="button"
-                onClick={handleRemoveImage}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-              >
-                Remove Image
-              </button>
-            </>
-          )}
-          <button
-            type="submit"
-            className="px-4 py-2 bg-[#4C2E05] text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            disabled={isBotLoading}
-          >
-            Send
-          </button>
-        </div>
-      </form>
+      <Transition
+        show={messages.length <= 0}
+        enter="transition-all duration-300 ease-in-out"
+        enterFrom="opacity-0 translate-y-full"
+        enterTo="opacity-100 translate-y-0"
+        leave="transition-all duration-500 ease-in-out delay-300"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 translate-y-full"
+        className="flex-shrink-0"
+      >
+        {/* form here */}
+        <form onSubmit={handleSendMessage} className="mb-4">
+          <textarea
+            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            rows={4}
+            placeholder="Enter your question here..."
+            onChange={handleInputChange}
+            value={inputMessage}
+          ></textarea>
+          <div className="flex flex-wrap justify-end items-center gap-4 mt-2">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              id="imageInput"
+              onChange={handleImageUpload}
+            />
+            <label
+              htmlFor="imageInput"
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 cursor-pointer"
+            >
+              Upload Image
+            </label>
+            {imageBase64 && (
+              <>
+                <span className="text-sm text-gray-600">1 file uploaded</span>
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                >
+                  Remove Image
+                </button>
+              </>
+            )}
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#4C2E05] text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              disabled={isBotLoading}
+            >
+              Send
+            </button>
+          </div>
+        </form>
+      </Transition>
       {messages.map((message, index) => (
         <Transition appear={true} show={true} key={index}>
           <div className={`transition duration-300 ease-in mb-4 p-4 rounded-lg ${index % 2 === 0 ? 'bg-[#CEC288] dark:bg-red-800' : 'bg-[#f3eed2] border-[#4C2E05] dark:bg-blue-800 shadow-md'
@@ -117,6 +127,60 @@ const ChatInterface = ({
           </div>
         </Transition>
       ))}
+      <Transition
+        show={messages.length > 0}
+        enter="transition-all duration-300 ease-in-out"
+        enterFrom="opacity-0 translate-y-full"
+        enterTo="opacity-100 translate-y-0"
+        leave="transition-all duration-500 ease-in-out delay-300"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 translate-y-full"
+        className="flex-shrink-0"
+      >
+          <form onSubmit={handleSendMessage} className="mb-4">
+            <textarea
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              rows={4}
+              placeholder="Enter your question here..."
+              onChange={handleInputChange}
+              value={inputMessage}
+            ></textarea>
+            <div className="flex flex-wrap justify-end items-center gap-4 mt-2">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                id="imageInput"
+                onChange={handleImageUpload}
+              />
+              <label
+                htmlFor="imageInput"
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 cursor-pointer"
+              >
+                Upload Image
+              </label>
+              {imageBase64 && (
+                <>
+                  <span className="text-sm text-gray-600">1 file uploaded</span>
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                  >
+                    Remove Image
+                  </button>
+                </>
+              )}
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#4C2E05] text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                disabled={isBotLoading}
+              >
+                Send
+              </button>
+            </div>
+          </form>
+      </Transition>
     </>
 
   );
