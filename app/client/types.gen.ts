@@ -45,6 +45,9 @@ export type GetChatMessagesChatsChatIdMessagesGetData = {
     chatId: string;
 };
 
+export type GetChatsChatByUserGetData = {
+    userId: string;
+};
 export type GetChatMessagesChatsChatIdMessagesGetResponse = (unknown);
 
 export type CreateAnonymousChatAnonymousChatsPostResponse = (unknown);
